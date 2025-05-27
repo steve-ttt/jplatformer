@@ -9,18 +9,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     private Thread gameThread;
     private final int FPS = 60;
 
-    // Player movement flags
-    private boolean isLeftPressed = false;
-    private boolean isRightPressed = false;
-    private int playerSpeed = 5;
-
-    // Player properties
-    private int playerX;
-    private int playerY;
-    private float playerVelocityY = 0; // Vertical velocity
-    private float gravity = 0.5f;       // Gravity strength
-    private int playerWidth;
-    private int playerHeight;
+    private Player player; // Declare Player instance
 
     // Platform properties
     private int platformX;
@@ -31,11 +20,8 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     public GamePanel() {
         setBackground(Color.CYAN); // Placeholder light blue background
 
-        // Initialize player properties
-        playerWidth = 50;
-        playerHeight = 50;
-        playerX = 100; // Starting X position
-        playerY = 500 - playerHeight; // Starting Y position (assuming 600px height, near bottom)
+        // Initialize player (default values, will be updated later if needed)
+        player = new Player(100, 500 - 50, 50, 50); // x, y, width, height
 
         // Initialize platform properties
         platformX = 200;
@@ -57,46 +43,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
     // Game logic update method
     public void updateGame() {
-        // Horizontal movement
-        if (isLeftPressed) {
-            playerX -= playerSpeed;
-        }
-        if (isRightPressed) {
-            playerX += playerSpeed;
-        }
-
-        // Store player's Y position before applying gravity/velocity for this frame
-        float prevPlayerY = playerY;
-
-        // Apply vertical velocity
-        playerY += playerVelocityY;
-
-        // Platform Collision Detection
-        boolean onPlatform = false;
-        if (playerX + playerWidth > platformX &&              // Player's right edge is to the right of platform's left edge
-            playerX < platformX + platformWidth &&           // Player's left edge is to the left of platform's right edge
-            prevPlayerY + playerHeight <= platformY &&       // Player's bottom was at or above platform's top edge PREVIOUSLY
-            playerY + playerHeight > platformY &&            // Player's bottom is now below platform's top edge CURRENTLY
-            playerVelocityY > 0) {                           // Player is falling
-
-            playerY = platformY - playerHeight; // Place player on top of the platform
-            playerVelocityY = 0;                // Stop vertical movement
-            onPlatform = true;
-        }
-
-        // Apply gravity (if not on a platform that stopped velocity)
-        if (!onPlatform) {
-            playerVelocityY += gravity;
-        }
-
-        // Ground collision (Panel Bottom) - This should remain to catch falls if player misses platform
-        int panelHeight = getHeight();
-        if (panelHeight > 0 && playerY + playerHeight > panelHeight) { 
-            playerY = panelHeight - playerHeight;
-            if (playerVelocityY > 0) { // Only stop if falling onto ground
-                 playerVelocityY = 0;
-            }
-        }
+        player.update(platformX, platformY, platformWidth, platformHeight, getHeight());
     }
 
     @Override
@@ -119,9 +66,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g); // Draws the background
 
-        // Draw the player
-        g.setColor(Color.RED); // Set player color
-        g.fillRect(playerX, playerY, playerWidth, playerHeight);
+        player.draw(g); // Call player's draw method
 
         // Draw the platform
         g.setColor(Color.GREEN); // Set platform color
@@ -136,10 +81,10 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
         if (keyCode == KeyEvent.VK_LEFT) {
-            isLeftPressed = true;
+            player.setLeftPressed(true);
         }
         if (keyCode == KeyEvent.VK_RIGHT) {
-            isRightPressed = true;
+            player.setRightPressed(true);
         }
     }
 
@@ -147,10 +92,10 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     public void keyReleased(KeyEvent e) {
         int keyCode = e.getKeyCode();
         if (keyCode == KeyEvent.VK_LEFT) {
-            isLeftPressed = false;
+            player.setLeftPressed(false);
         }
         if (keyCode == KeyEvent.VK_RIGHT) {
-            isRightPressed = false;
+            player.setRightPressed(false);
         }
     }
 

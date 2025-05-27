@@ -4,30 +4,27 @@ import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+// Imports for Game State Management
+import java.awt.event.KeyEvent; // Already present, but good to note for GSM
+// import GameStateManager; // Will be implicitly handled by package or assume same directory
+// import MenuState; // Will be implicitly handled by package or assume same directory
+
+
 public class GamePanel extends JPanel implements Runnable, KeyListener {
 
     private Thread gameThread;
     private final int FPS = 60;
 
-    private Player player; // Declare Player instance
+    private GameStateManager gsm; // Game State Manager
 
-    // Platform properties
-    private int platformX;
-    private int platformY;
-    private int platformWidth;
-    private int platformHeight;
+    // Player and platform properties are now managed by individual states
 
     public GamePanel() {
         setBackground(Color.CYAN); // Placeholder light blue background
 
-        // Initialize player (default values, will be updated later if needed)
-        player = new Player(100, 500 - 50, 50, 50); // x, y, width, height
-
-        // Initialize platform properties
-        platformX = 200;
-        platformY = 400;
-        platformWidth = 150;
-        platformHeight = 20;
+        // Initialize GameStateManager and set initial state
+        gsm = new GameStateManager();
+        gsm.setState(new MenuState(gsm)); // Assuming MenuState is in the same package or imported
 
         // Setup for keyboard input
         setFocusable(true);
@@ -43,7 +40,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
     // Game logic update method
     public void updateGame() {
-        player.update(platformX, platformY, platformWidth, platformHeight, getHeight());
+        gsm.update();
     }
 
     @Override
@@ -66,37 +63,20 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g); // Draws the background
 
-        player.draw(g); // Call player's draw method
-
-        // Draw the platform
-        g.setColor(Color.GREEN); // Set platform color
-        g.fillRect(platformX, platformY, platformWidth, platformHeight);
+        gsm.render(g); // Delegate rendering to the current game state
 
         // The background color is set by setBackground and handled by super.paintComponent(g).
-        // If we wanted to draw something else on top of the background, it would go here.
     }
 
     // KeyListener methods
     @Override
     public void keyPressed(KeyEvent e) {
-        int keyCode = e.getKeyCode();
-        if (keyCode == KeyEvent.VK_LEFT) {
-            player.setLeftPressed(true);
-        }
-        if (keyCode == KeyEvent.VK_RIGHT) {
-            player.setRightPressed(true);
-        }
+        gsm.handleInput(e, true);
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        int keyCode = e.getKeyCode();
-        if (keyCode == KeyEvent.VK_LEFT) {
-            player.setLeftPressed(false);
-        }
-        if (keyCode == KeyEvent.VK_RIGHT) {
-            player.setRightPressed(false);
-        }
+        gsm.handleInput(e, false);
     }
 
     @Override

@@ -1,3 +1,5 @@
+package com.gamedevelopment.gamelib;
+
 import java.awt.Graphics; // Required for the draw method
 import java.awt.Color; // Required for the draw method
 

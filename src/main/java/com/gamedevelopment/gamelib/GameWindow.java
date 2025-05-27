@@ -1,3 +1,5 @@
+package com.gamedevelopment.gamelib;
+
 import javax.swing.JFrame;
 
 public class GameWindow {

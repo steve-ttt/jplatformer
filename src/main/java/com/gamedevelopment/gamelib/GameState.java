@@ -1,3 +1,5 @@
+package com.gamedevelopment.gamelib;
+
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 
